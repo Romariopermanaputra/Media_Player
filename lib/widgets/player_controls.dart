@@ -395,10 +395,13 @@ class PlayerControlsState extends State<PlayerControls>
                       setState(() => _dragValue = value);
                     } : null,
                     onChangeStart: (_) => _hideTimer?.cancel(),
-                    onChangeEnd: (value) {
-                      player.seekTo(Duration(milliseconds: value.toInt()));
-                      setState(() => _dragValue = null);
-                      _startHideTimer();
+                    onChangeEnd: (value) async {
+                      final targetMs = value.toInt();
+                      await player.seekTo(Duration(milliseconds: targetMs));
+                      if (mounted) {
+                        setState(() => _dragValue = null);
+                        _startHideTimer();
+                      }
                     },
                   ),
                 ),
@@ -408,7 +411,7 @@ class PlayerControlsState extends State<PlayerControls>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _formatDur(position),
+                        _formatDur(Duration(milliseconds: (_dragValue ?? posMs).toInt())),
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 12,

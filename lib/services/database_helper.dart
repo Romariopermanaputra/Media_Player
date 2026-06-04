@@ -316,7 +316,19 @@ class DatabaseHelper {
   Future<int> insertHistory(HistoryItem item) async {
     final db = await database;
     try {
-      final id = await db.insert('play_history', item.toMap());
+      final existing = await getHistoryByPath(item.mediaPath);
+      int id;
+      if (existing != null && existing.id != null) {
+        id = existing.id!;
+        await db.update('play_history', {
+          'played_at': item.playedAt.millisecondsSinceEpoch,
+          if (item.durationMs != null) 'duration_ms': item.durationMs,
+          if (item.thumbnailPath != null) 'thumbnail_path': item.thumbnailPath,
+        }, where: 'id = ?', whereArgs: [id]);
+      } else {
+        id = await db.insert('play_history', item.toMap());
+      }
+      
       // Batasi maksimal 50 lagu di database
       await db.rawDelete('''
         DELETE FROM play_history 
