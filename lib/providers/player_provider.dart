@@ -5,12 +5,15 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:media_player/services/audio_handler.dart';
 import 'package:media_player/services/database_helper.dart';
+import 'package:media_player/models/history_item.dart';
 
 /// Provider untuk mengelola state pemutaran media (audio/video).
 ///
 /// Menggunakan `media_kit` sebagai engine pemutaran. Menyediakan kontrol penuh
 /// termasuk play, pause, seek, volume, kecepatan, dan fullscreen.
 class PlayerProvider extends ChangeNotifier {
+  VoidCallback? onCompleted;
+
   // ──────────────────────────── Player core ────────────────────────────
   Player? _player;
   VideoController? _videoController;
@@ -116,6 +119,7 @@ class PlayerProvider extends ChangeNotifier {
           _isPlaying = false;
           _position = _duration;
           notifyListeners();
+          onCompleted?.call();
         }
       }),
     );
@@ -161,6 +165,25 @@ class PlayerProvider extends ChangeNotifier {
       album: media?.album,
       artworkPath: media?.coverArtPath ?? media?.thumbnailPath,
     );
+
+    // Tambahkan ke DB History
+    if (media != null) {
+      await DatabaseHelper.instance.insertHistory(HistoryItem(
+        mediaPath: path,
+        mediaName: media.name,
+        lastPositionMs: 0,
+        durationMs: media.durationMs,
+        thumbnailPath: media.coverArtPath ?? media.thumbnailPath,
+        playedAt: DateTime.now(),
+      ));
+    } else {
+      await DatabaseHelper.instance.insertHistory(HistoryItem(
+        mediaPath: path,
+        mediaName: _currentMediaName ?? 'Unknown',
+        lastPositionMs: 0,
+        playedAt: DateTime.now(),
+      ));
+    }
 
     // Buka media dan langsung putar (autoStart)
     await _player!.open(Media(path));

@@ -111,7 +111,7 @@ class _AutoPlaylistScreenState extends State<AutoPlaylistScreen> {
                       );
                     },
                   ),
-        bottomNavigationBar: MiniPlayer(onPop: _loadData),
+        bottomNavigationBar: MiniPlayer(onPop: _loadData, useSafeArea: true),
       ),
     );
   }

@@ -32,6 +32,7 @@ class PlayerControlsState extends State<PlayerControls>
     with TickerProviderStateMixin {
   bool _visible = true;
   Timer? _hideTimer;
+  double? _dragValue;
 
   late final AnimationController _animController;
   late final Animation<double> _fadeAnim;
@@ -347,7 +348,7 @@ class PlayerControlsState extends State<PlayerControls>
     final player = Provider.of<PlayerProvider>(context, listen: false);
     final history = Provider.of<HistoryProvider>(context, listen: false);
     final path = player.currentMediaPath;
-    if (path != null && player.position > const Duration(seconds: 5)) {
+    if (path != null) {
       history.addToHistory(
         path,
         path.split(RegExp(r'[/\\]')).last,
@@ -388,14 +389,17 @@ class PlayerControlsState extends State<PlayerControls>
                     overlayColor: _teal.withValues(alpha: 0.2),
                   ),
                   child: Slider(
-                    value: durMs > 0 ? posMs.clamp(0, durMs) : 0,
+                    value: durMs > 0 ? (_dragValue ?? posMs).clamp(0, durMs) : 0,
                     max: durMs > 0 ? durMs : 1,
-                    onChanged: (value) {
-                      player.seekTo(Duration(milliseconds: value.toInt()));
-                      _onInteraction();
-                    },
+                    onChanged: durMs > 0 ? (value) {
+                      setState(() => _dragValue = value);
+                    } : null,
                     onChangeStart: (_) => _hideTimer?.cancel(),
-                    onChangeEnd: (_) => _startHideTimer(),
+                    onChangeEnd: (value) {
+                      player.seekTo(Duration(milliseconds: value.toInt()));
+                      setState(() => _dragValue = null);
+                      _startHideTimer();
+                    },
                   ),
                 ),
                 Padding(

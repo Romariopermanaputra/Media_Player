@@ -90,7 +90,7 @@ class _ArtistDetailsScreenState extends State<ArtistDetailsScreen> {
                       );
                     },
                   ),
-        bottomNavigationBar: MiniPlayer(onPop: _loadArtistMedia),
+        bottomNavigationBar: MiniPlayer(onPop: _loadArtistMedia, useSafeArea: true),
       ),
     );
   }

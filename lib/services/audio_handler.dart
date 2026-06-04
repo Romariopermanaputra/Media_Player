@@ -9,6 +9,17 @@ class MediaAudioHandler extends BaseAudioHandler {
   Player? _player;
   final List<StreamSubscription> _subscriptions = [];
   
+  VoidCallback? onSkipToNextCallback;
+  VoidCallback? onSkipToPreviousCallback;
+  VoidCallback? onStopCallback;
+  
+  // Custom close control instead of stop
+  static const MediaControl closeControl = MediaControl(
+    androidIcon: 'drawable/ic_close',
+    label: 'Close',
+    action: MediaAction.stop,
+  );
+  
   MediaAudioHandler() {
     _initAudioSession();
   }
@@ -109,13 +120,19 @@ class MediaAudioHandler extends BaseAudioHandler {
       controls: [
         MediaControl.skipToPrevious,
         if (playing) MediaControl.pause else MediaControl.play,
-        MediaControl.stop,
+        closeControl,
         MediaControl.skipToNext,
       ],
       systemActions: const {
         MediaAction.seek,
         MediaAction.seekForward,
         MediaAction.seekBackward,
+        MediaAction.play,
+        MediaAction.pause,
+        MediaAction.playPause,
+        MediaAction.skipToNext,
+        MediaAction.skipToPrevious,
+        MediaAction.stop,
       },
       androidCompactActionIndices: const [0, 1, 3],
       processingState: processingState,
@@ -136,8 +153,19 @@ class MediaAudioHandler extends BaseAudioHandler {
   Future<void> seek(Duration position) async => await _player?.seek(position);
 
   @override
+  Future<void> skipToNext() async {
+    onSkipToNextCallback?.call();
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    onSkipToPreviousCallback?.call();
+  }
+
+  @override
   Future<void> stop() async {
     await _player?.stop();
+    onStopCallback?.call();
     await super.stop();
   }
 }
@@ -194,5 +222,15 @@ class AudioHandler {
 
   Future<void> stop() async {
     await _handler?.stop();
+  }
+
+  void setCallbacks({
+    VoidCallback? onNext,
+    VoidCallback? onPrev,
+    VoidCallback? onStop,
+  }) {
+    _handler?.onSkipToNextCallback = onNext;
+    _handler?.onSkipToPreviousCallback = onPrev;
+    _handler?.onStopCallback = onStop;
   }
 }

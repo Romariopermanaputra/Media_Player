@@ -10,8 +10,20 @@ import 'package:media_player/providers/history_provider.dart';
 import 'package:media_player/services/audio_handler.dart';
 import 'package:media_player/screens/home_screen.dart';
 
+final globalPlayerProvider = PlayerProvider();
+final globalPlaylistProvider = PlaylistProvider();
+final globalHistoryProvider = HistoryProvider();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Setup auto play next
+  globalPlayerProvider.onCompleted = () {
+    final nxt = globalPlaylistProvider.next();
+    if (nxt != null) {
+      globalPlayerProvider.openMedia(nxt.path, isVideo: nxt.isVideo);
+    }
+  };
 
   // Inisialisasi media_kit
   MediaKit.ensureInitialized();
@@ -19,6 +31,21 @@ void main() async {
   // Inisialisasi audio handler untuk background playback
   try {
     await AudioHandler.instance.init();
+    
+    AudioHandler.instance.setCallbacks(
+      onNext: () {
+        final nxt = globalPlaylistProvider.next();
+        if (nxt != null) {
+          globalPlayerProvider.openMedia(nxt.path, isVideo: nxt.isVideo);
+        }
+      },
+      onPrev: () {
+        final prev = globalPlaylistProvider.previous();
+        if (prev != null) {
+          globalPlayerProvider.openMedia(prev.path, isVideo: prev.isVideo);
+        }
+      },
+    );
   } catch (e) {
     debugPrint('Gagal inisialisasi AudioHandler: $e');
   }
@@ -43,10 +70,10 @@ class MediaPlayerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => PlayerProvider()),
-        ChangeNotifierProvider(create: (_) => PlaylistProvider()),
+        ChangeNotifierProvider.value(value: globalPlayerProvider),
+        ChangeNotifierProvider.value(value: globalPlaylistProvider),
+        ChangeNotifierProvider.value(value: globalHistoryProvider),
         ChangeNotifierProvider(create: (_) => FileBrowserProvider()),
-        ChangeNotifierProvider(create: (_) => HistoryProvider()),
       ],
       child: MaterialApp(
         title: 'Media Player',

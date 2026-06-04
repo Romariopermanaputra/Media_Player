@@ -70,6 +70,7 @@ class _VideoHomeScreenState extends State<VideoHomeScreen> with SingleTickerProv
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          tabAlignment: TabAlignment.center,
           indicatorColor: tealAccent,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white54,

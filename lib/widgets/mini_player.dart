@@ -8,8 +8,9 @@ import 'package:path/path.dart' as p;
 
 class MiniPlayer extends StatelessWidget {
   final VoidCallback? onPop;
+  final bool useSafeArea;
 
-  const MiniPlayer({super.key, this.onPop});
+  const MiniPlayer({super.key, this.onPop, this.useSafeArea = false});
 
   @override
   Widget build(BuildContext context) {
@@ -36,41 +37,41 @@ class MiniPlayer extends StatelessWidget {
               ),
             ).then((_) => onPop?.call());
           },
-          child: SafeArea(
-            bottom: true,
-            top: false,
-            child: Container(
-              height: 64,
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E).withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-              ),
-              child: Row(
-                children: [
-                  // Cover Art Thumbnail
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        color: Colors.white.withValues(alpha: 0.05),
-                        child: coverPath != null && File(coverPath).existsSync()
-                            ? Image.file(File(coverPath), fit: BoxFit.cover)
-                            : const Icon(Icons.music_note_rounded, color: Colors.white54),
-                      ),
+            child: SafeArea(
+              bottom: useSafeArea,
+              top: false,
+              child: Container(
+                height: 64,
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A2E).withValues(alpha: 0.95),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                child: Row(
+                  children: [
+                // Cover Art Thumbnail
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      color: Colors.white.withValues(alpha: 0.05),
+                      child: coverPath != null && File(coverPath).existsSync()
+                          ? Image.file(File(coverPath), fit: BoxFit.cover)
+                          : const Icon(Icons.music_note_rounded, color: Colors.white54),
                     ),
                   ),
+                ),
 
                   // Info
                   Expanded(

@@ -90,7 +90,7 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                       );
                     },
                   ),
-        bottomNavigationBar: MiniPlayer(onPop: _loadPlaylistMedia),
+        bottomNavigationBar: MiniPlayer(onPop: _loadPlaylistMedia, useSafeArea: true),
       ),
     );
   }

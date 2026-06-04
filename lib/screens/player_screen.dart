@@ -12,7 +12,6 @@ import 'dart:io';
 import 'package:media_player/models/media_item.dart';
 import 'package:media_player/providers/playlist_provider.dart';
 import 'package:media_player/providers/history_provider.dart';
-import 'package:media_player/services/audio_handler.dart';
 import 'package:media_player/widgets/gesture_overlay.dart';
 import 'package:media_player/widgets/equalizer_panel.dart';
 import 'package:media_player/widgets/playlist_panel.dart';
@@ -131,7 +130,6 @@ class _PlayerScreenState extends State<PlayerScreen>
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    AudioHandler.instance.setPlayer(null);
     // Do NOT dispose _player because it is managed by PlayerProvider
     // _player.dispose();
     super.dispose();
@@ -173,8 +171,6 @@ class _PlayerScreenState extends State<PlayerScreen>
       await _player.seek(widget.startPosition!);
     }
 
-    // Sambungkan player ke AudioHandler untuk background audio
-    AudioHandler.instance.setPlayer(_player);
     // Note: metadata sudah diupdate oleh PlayerProvider.openMedia dari DB
 
     // Subscribe ke stream state player
@@ -325,26 +321,24 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   void _saveCurrentPosition() {
-    if (_position > const Duration(seconds: 5)) {
-      try {
-        final playerProv = Provider.of<PlayerProvider>(context, listen: false);
-        final historyProv = Provider.of<HistoryProvider>(context, listen: false);
-        
-        final path = playerProv.currentMediaPath ?? widget.filePath;
-        final fileName = path.split(RegExp(r'[/\\]')).last;
-        
-        historyProv.addToHistory(
-          path,
-          fileName,
-          durationMs: _duration.inMilliseconds,
-        );
-        historyProv.updatePosition(
-          path,
-          _position.inMilliseconds,
-        );
-      } catch (e) {
-        debugPrint('Gagal menyimpan posisi: $e');
-      }
+    try {
+      final playerProv = Provider.of<PlayerProvider>(context, listen: false);
+      final historyProv = Provider.of<HistoryProvider>(context, listen: false);
+      
+      final path = playerProv.currentMediaPath ?? widget.filePath;
+      final fileName = path.split(RegExp(r'[/\\]')).last;
+      
+      historyProv.addToHistory(
+        path,
+        fileName,
+        durationMs: _duration.inMilliseconds,
+      );
+      historyProv.updatePosition(
+        path,
+        _position.inMilliseconds,
+      );
+    } catch (e) {
+      debugPrint('Gagal menyimpan posisi: $e');
     }
   }
 

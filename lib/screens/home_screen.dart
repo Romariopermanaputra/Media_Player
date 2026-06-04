@@ -236,11 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final filtered = _getFilteredMedia();
     if (filtered.isEmpty) return;
     
-    final playlistProv = Provider.of<PlaylistProvider>(context, listen: false);
-    playlistProv.clearPlaylist();
-    
     final shuffled = List<MediaItem>.from(filtered)..shuffle();
-    playlistProv.addMultiple(shuffled);
     
     Navigator.push(
       context,
@@ -248,9 +244,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         builder: (_) => PlayerScreen(
           filePath: shuffled.first.path, 
           isVideo: shuffled.first.isVideo,
+          playlist: shuffled,
         ),
       ),
-    );
+    ).then((_) => _loadMediaOnly());
   }
 
   void _toggleSelection(String path) {
@@ -402,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       child: Scaffold(
         backgroundColor: _kBackgroundDark,
-        extendBodyBehindAppBar: true,
+        extendBodyBehindAppBar: false,
         appBar: _bottomNavIndex == 0 ? (_isSelectionMode ? _buildSelectionAppBar() : _buildAppBar()) : null,
         body: _isLoading ? _buildLoadingState() : (_bottomNavIndex == 0 ? _buildBody() : const VideoHomeScreen()),
         floatingActionButton: _bottomNavIndex == 0 ? _buildFAB() : null,
@@ -526,6 +523,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       bottom: TabBar(
         controller: _tabController,
         isScrollable: true,
+        tabAlignment: TabAlignment.center,
         indicatorColor: _kTealAccent,
         labelColor: _kTealAccent,
         unselectedLabelColor: Colors.white54,
